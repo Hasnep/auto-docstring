@@ -27,10 +27,8 @@ def find_functions_in_ast(tree: AST) -> List[FunctionDef]:
     return [node for node in ast.walk(tree) if isinstance(node, FunctionDef)]
 
 
-def stringify_type_expression(type_expression: ast.Expr) -> str:
-    if isinstance(type_expression,ast.Expr):
-        return type_expression
-    elif isinstance(type_expression, ast.Name):
+def stringify_type_expression(type_expression: ast.expr) -> str:
+    if isinstance(type_expression, ast.Name):
         return type_expression.id
     elif isinstance(type_expression, ast.Subscript):
         subscript_name: str = type_expression.value.id  # type: ignore
@@ -107,11 +105,11 @@ def extract_docstring_parts(docstring: str) -> DocstringParts:
                 r"^",  # Start of string
                 r"(?: {0,4})?",  # Optional indentation
                 r"(?P<summary>.+)",  # One line summary
-                r"(?:\n\n {4}(?P<description>(.|\n)+?))?",  # Optional multi-line description
-                r"(?:\n\n {4}Args:\n(?P<args>(.|\n)+?))?",  # Optional list of arguments
-                r"(?:\n\n {4}Raises:\n(?P<raises>(.|\n)+))?",  # Optional list of errors raised
-                r"(?:\n\n {4}Returns:\n(?P<returns>(.|\n)+?))?",  # Optional list of return values
-                r"(?:\n\n {4}Yields:\n(?P<yields>(.|\n)+))?",  # Optional list of yield values
+                r"(?:\n\n(?P<description>(.|\n)+?))?",  # Optional multi-line description
+                r"(?:\n\nArgs:\n(?P<args>(.|\n)+?))?",  # Optional list of arguments
+                r"(?:\n\nRaises:\n(?P<raises>(.|\n)+))?",  # Optional list of errors raised
+                r"(?:\n\nReturns:\n(?P<returns>(.|\n)+?))?",  # Optional list of return values
+                r"(?:\n\nYields:\n(?P<yields>(.|\n)+))?",  # Optional list of yield values
                 r"\n*",  # Trailing newlines
                 "$",  # End of string
             ]
@@ -129,3 +127,52 @@ def extract_docstring_parts(docstring: str) -> DocstringParts:
             returns=matches.group("returns"),
             yields=matches.group("yields"),
         )
+
+
+@dataclass
+class DocstringFunctionArgument:
+    name: str
+    type_hint: Optional[str]
+    description: str
+
+
+def parse_args_from_docstring(docstring_args: str) -> List[DocstringFunctionArgument]:
+    docstring_args = docstring_args.strip()
+    args: List[DocstringFunctionArgument] = []
+    argument_pattern = re.compile(
+        r"^(?P<name>\w+) \((?P<type_hint>.+)\): (?P<description>.+)$"
+    )
+    found_an_arg = False
+    name: str = ""
+    type_hint: str = ""
+    description: str = ""
+    for line in docstring_args.splitlines():
+        line = line.strip()
+        if len(line) == 0:
+            continue
+        matches = argument_pattern.match(line)
+        if matches:
+            if found_an_arg:
+                argument = DocstringFunctionArgument(
+                    name=name, type_hint=type_hint, description=description
+                )
+                args.append(argument)
+
+            name = matches.group("name")
+            type_hint = matches.group("type_hint")
+            description = matches.group("description")
+            found_an_arg = True
+        else:
+            if found_an_arg:
+                description += "\n" + line
+            else:
+                raise ValueError(
+                    "Found an argument description without defining an argument."
+                )
+    return args
+
+def generate_docstring_argument(arg:FunctionArgument)->str:
+    
+
+def generate_docstring(function:FunctionParts)->str:
+    function.arguments

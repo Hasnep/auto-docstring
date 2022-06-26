@@ -7,7 +7,7 @@ fix: ssort isort black
 lint: pyright flake8
 
 test:
-	poetry run python -m pytest --cov=auto_docstring .
+	poetry run python -m pytest --cov=auto_docstring --verbose .
 
 run:
 	poetry run python -m auto_docstring
