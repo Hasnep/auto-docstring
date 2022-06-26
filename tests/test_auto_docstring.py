@@ -5,7 +5,12 @@ import pytest
 
 from auto_docstring import (  # extract_docstring_parts,; extract_parts_of_function_def,
     DocstringFunctionArgument,
+    FunctionArgument,
+    FunctionParts,
     find_functions_in_ast,
+    generate_docstring,
+    generate_docstring_argument,
+    indent,
     parse_args_from_docstring,
     parse_python_code,
     stringify_type_expression,
@@ -130,3 +135,52 @@ def test_parse_args_from_docstring(
         assert output_arg.name == expected_arg.name
         assert output_arg.type_hint == expected_arg.type_hint
         assert output_arg.description == expected_arg.description
+
+
+@pytest.mark.parametrize(
+    ",".join(["test_string", "indent_level", "expected_output"]),
+    [
+        ("test", 0, "test"),
+        ("test", 1, "    test"),
+        ("test", 2, "        test"),
+        ("test\nstring", 1, "    test\n    string"),
+    ],
+)
+def test_indent(test_string: str, indent_level: int, expected_output: str):
+    assert indent(test_string, indent_level) == expected_output
+
+
+@pytest.mark.parametrize(
+    ",".join(["arg", "expected_argument_docstring"]),
+    [(FunctionArgument("x", "int"), "x (int): _argument_description_")],
+)
+def test_generate_docstring_argument(
+    arg: FunctionArgument, expected_argument_docstring: str
+):
+    assert generate_docstring_argument(arg) == expected_argument_docstring
+
+
+@pytest.mark.parametrize(
+    ",".join(["function_parts", "expected_docstring"]),
+    [
+        (
+            FunctionParts(
+                None,
+                [FunctionArgument("x", "int"), FunctionArgument("y", "str")],
+                "Optional[int]",
+            ),
+            """
+_function_summary_
+
+Args:
+    x (int): _argument_description_
+    y (str): _argument_description_
+
+Return:
+    Optional[int]: _return_description_
+""",
+        )
+    ],
+)
+def test_generate_docstring(function_parts: FunctionParts, expected_docstring: str):
+    assert generate_docstring(function_parts) == expected_docstring

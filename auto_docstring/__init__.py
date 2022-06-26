@@ -171,8 +171,37 @@ def parse_args_from_docstring(docstring_args: str) -> List[DocstringFunctionArgu
                 )
     return args
 
-def generate_docstring_argument(arg:FunctionArgument)->str:
-    
 
-def generate_docstring(function:FunctionParts)->str:
-    function.arguments
+def indent(s: str, n: int) -> str:
+    def indent_line(line: str, n: int):
+        return (" " * 4 * n) + line
+
+    return "\n".join([indent_line(line, n) for line in s.splitlines()])
+
+
+def generate_docstring_argument(arg: FunctionArgument) -> str:
+    return f"{arg.name} ({arg.type_hint}): _argument_description_"
+
+
+def generate_docstring_return(return_type_hint: str) -> str:
+    return f"{return_type_hint}: _return_description_"
+
+
+def generate_docstring(function: FunctionParts) -> str:
+    docstring_parts = ["_function_summary_"]
+    if len(function.arguments) > 0:
+        docstring_parts.append(
+            "\n".join(
+                ["Args:"] + [generate_docstring_argument(a) for a in function.arguments]
+            )
+        )
+    if (function.return_type_hint) is not None:
+        docstring_parts.append(
+            "\n".join(
+                [
+                    "Return:",
+                    indent(generate_docstring_return(function.return_type_hint), 4),
+                ]
+            )
+        )
+    return "\n".join(docstring_parts)
