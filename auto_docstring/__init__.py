@@ -119,7 +119,6 @@ def extract_docstring_parts(docstring: str) -> DocstringParts:
             ]
         )
     )
-    print(pattern.pattern)
     matches = pattern.match(docstring)
     if matches is None:
         raise ValueError("no matches")
@@ -219,8 +218,7 @@ def generate_docstring(function: FunctionParts) -> str:
 def check_docstring(function: FunctionParts) -> bool:
     function_name = function.name
     docstring = function.docstring
-    print(docstring)
-
+    
     # No docstring obviously fails
     if docstring is None:
         print(f"Function `{function_name}` has no docstring.")
@@ -229,7 +227,6 @@ def check_docstring(function: FunctionParts) -> bool:
     is_correct = True
 
     docstring_parts = extract_docstring_parts(docstring)
-    print(docstring_parts)
 
     # Compare the docstring to the function definition
     docstring_args = parse_args_from_docstring(docstring_parts.args)
