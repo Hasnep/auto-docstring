@@ -1,8 +1,17 @@
+import argparse
 import ast
 import re
 from ast import AST, FunctionDef
 from dataclasses import dataclass
+from pathlib import Path
 from typing import List, Optional, Tuple
+
+
+def get_cli_arguments() -> List[Path]:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("file_paths", nargs="*")
+    arguments = parser.parse_args()
+    return arguments.file_paths
 
 
 @dataclass
@@ -13,6 +22,7 @@ class FunctionArgument:
 
 @dataclass
 class FunctionParts:
+    name: str
     docstring: Optional[str]
     arguments: List[FunctionArgument]
     return_type_hint: Optional[str]
@@ -65,22 +75,16 @@ def get_function_arguments(function_def: FunctionDef) -> List[FunctionArgument]:
     ]
 
 
+def get_function_name(function_def: FunctionDef) -> str:
+    return function_def.name
+
+
 def extract_parts_of_function_def(function_def: FunctionDef) -> FunctionParts:
+    function_name = get_function_name(function_def)
+    docstring = ast.get_docstring(function_def)
     arguments = get_function_arguments(function_def)
     return_type = get_return_type_hint(function_def)
-    return FunctionParts(
-        docstring=ast.get_docstring(function_def),
-        arguments=arguments,
-        return_type_hint=return_type,
-        # function_def.col_offset      ,
-        # function_def.end_col_offset  ,
-        # function_def.lineno          ,
-        # function_def.body            ,
-        # function_def.decorator_list  ,
-        # function_def.end_lineno      ,
-        # function_def.name            ,
-        # function_def.type_comment    ,
-    )
+    return FunctionParts(function_name, docstring, arguments, return_type)
 
 
 def split_first(x: str, until_this: str) -> Tuple[str, str, str]:
@@ -115,6 +119,7 @@ def extract_docstring_parts(docstring: str) -> DocstringParts:
             ]
         )
     )
+    print(pattern.pattern)
     matches = pattern.match(docstring)
     if matches is None:
         raise ValueError("no matches")
@@ -192,7 +197,11 @@ def generate_docstring(function: FunctionParts) -> str:
     if len(function.arguments) > 0:
         docstring_parts.append(
             "\n".join(
-                ["Args:"] + [generate_docstring_argument(a) for a in function.arguments]
+                ["Args:"]
+                + [
+                    indent(generate_docstring_argument(a), 1)
+                    for a in function.arguments
+                ]
             )
         )
     if (function.return_type_hint) is not None:
@@ -205,3 +214,35 @@ def generate_docstring(function: FunctionParts) -> str:
             )
         )
     return "\n".join(docstring_parts)
+
+
+def check_docstring(function: FunctionParts) -> bool:
+    function_name = function.name
+    docstring = function.docstring
+    print(docstring)
+
+    # No docstring obviously fails
+    if docstring is None:
+        print(f"Function `{function_name}` has no docstring.")
+        return False
+
+    is_correct = True
+
+    docstring_parts = extract_docstring_parts(docstring)
+    print(docstring_parts)
+
+    # Compare the docstring to the function definition
+    docstring_args = parse_args_from_docstring(docstring_parts.args)
+    for function_arg, docstring_arg in zip(function.arguments, docstring_args):
+        if function_arg.name != docstring_arg.name:
+            print(
+                f"Function `{function_name}` argument `{function_arg.name}` is not documented."
+            )
+            is_correct = False
+        if function_arg.type_hint != docstring_arg.type_hint:
+            print(
+                f"Function `{function_name}` argument `{function_arg.name}` has the wrong type hint."
+            )
+            is_correct = False
+
+    return is_correct

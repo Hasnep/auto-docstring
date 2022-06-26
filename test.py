@@ -1,12 +1,31 @@
-# from auto_docstring import (
-#     find_functions_in_ast,
-#     get_return_type_hint,
-#     parse_python_code,
-#     stringify_type_expression,
-# )
+def f(x: int, y: Optional[Union[str, int]]) -> List[Dict[str, Any]]:
+    """
+    This is the summary line.
 
-# code = "def f() -> Union[str,int]:\n    pass"
-# tree = parse_python_code(code)
-# functions = find_functions_in_ast(tree)
-# type_hint = get_return_type_hint(functions[0])
-# stringify_type_expression(type_hint)
+    This is the first line of the description.
+    And this is the second line.
+
+    Args:
+        x (int): This is the description of the first argument.
+            It extends to another line.
+        y (Optional[Union[str,int]]): This is the description of the second argument.
+            This is the second line of the second argument's description.
+    
+    Returns:
+        List[Dict[str,Any]]: This is the description of the return type.
+    """
+    pass
+
+
+def g(x: int, y: Optional[Union[int, MyOtherType]]) -> Optional[Union[int, MyOtherType]]:
+    """
+    This is the summary line of a function.
+
+    Args:
+        x (int): This is the first argument's description.
+        y (Optional[Union[int, MyOtherType]]): This is the second argument's description.
+
+    Returns:
+        Optional[Union[int, MyOtherType]]: This is the return value's description.
+    """
+    pass
