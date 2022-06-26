@@ -218,7 +218,7 @@ def generate_docstring(function: FunctionParts) -> str:
 def check_docstring(function: FunctionParts) -> bool:
     function_name = function.name
     docstring = function.docstring
-    
+
     # No docstring obviously fails
     if docstring is None:
         print(f"Function `{function_name}` has no docstring.")
