@@ -3,7 +3,10 @@ from typing import List
 
 import pytest
 
-from auto_docstring import (  
+
+from auto_docstring.tests.utils import get_first_statement_as_expr, get_nth_letter
+
+from auto_docstring import (
     DocstringFunctionArgument,
     FunctionArgument,
     FunctionParts,
@@ -51,14 +54,10 @@ def g(x: int, y: Optional[Union[int, MyOtherType]]) -> Optional[Union[int, MyOth
 '''
 
 
-def _get_nth_letter(n: int) -> str:
-    return chr(ord("a") + n)
-
-
 @pytest.mark.parametrize(
     ",".join(["python_code", "expected_n_functions"]),
     [
-        ("\n\n".join([f"def {_get_nth_letter(i)}():\n    pass" for j in range(i)]), i)
+        ("\n\n".join([f"def {get_nth_letter(i)}():\n    pass" for j in range(i)]), i)
         for i in range(10)
     ],
 )
@@ -68,18 +67,12 @@ def test_find_functions_in_ast(python_code: str, expected_n_functions: int):
     assert len(output) == expected_n_functions
 
 
-def _get_first_statement_as_expr(test_code: str) -> ast.expr:
-    tree = ast.parse(test_code)
-    first_expression = tree.body[0]
-    return first_expression.value  # type: ignore
-
-
 stringify_type_expression_codes = [
     "List[Dict[str, Any]]",
     "Optional[Union[int, MyOtherType]]",
 ]
 stringify_type_expression_input = [
-    _get_first_statement_as_expr(test_code)
+    get_first_statement_as_expr(test_code)
     for test_code in stringify_type_expression_codes
 ]
 
