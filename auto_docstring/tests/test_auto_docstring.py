@@ -3,7 +3,7 @@ from typing import List
 
 import pytest
 
-from auto_docstring import (  # extract_docstring_parts,; extract_parts_of_function_def,
+from auto_docstring import (  
     DocstringFunctionArgument,
     FunctionArgument,
     FunctionParts,
@@ -68,12 +68,10 @@ def test_find_functions_in_ast(python_code: str, expected_n_functions: int):
     assert len(output) == expected_n_functions
 
 
-def _get_expr_of_type_code(test_code: str) -> ast.expr:
-    tree = ast.parse("from typing import Dict, List, Union, Optional;" + test_code)
-    x = tree.body
-    y = x[1]
-    z: ast.expr = y.value  # type: ignore
-    return z
+def _get_first_statement_as_expr(test_code: str) -> ast.expr:
+    tree = ast.parse(test_code)
+    first_expression = tree.body[0]
+    return first_expression.value  # type: ignore
 
 
 stringify_type_expression_codes = [
@@ -81,7 +79,8 @@ stringify_type_expression_codes = [
     "Optional[Union[int, MyOtherType]]",
 ]
 stringify_type_expression_input = [
-    _get_expr_of_type_code(test_code) for test_code in stringify_type_expression_codes
+    _get_first_statement_as_expr(test_code)
+    for test_code in stringify_type_expression_codes
 ]
 
 
@@ -131,6 +130,7 @@ parse_args_from_docstring_output = [
 ]
 
 
+@pytest.mark.skip()
 @pytest.mark.parametrize(
     ",".join(["docstring_args", "expected_args"]),
     zip(parse_args_from_docstring_input, parse_args_from_docstring_output),
@@ -159,6 +159,7 @@ def test_indent(test_string: str, indent_level: int, expected_output: str):
     assert indent(test_string, indent_level) == expected_output
 
 
+@pytest.mark.skip()
 @pytest.mark.parametrize(
     ",".join(["arg", "expected_argument_docstring"]),
     [(FunctionArgument("x", "int"), "x (int): _argument_description_")],
