@@ -1,3 +1,6 @@
+def no_docstring():
+    pass
+
 def f(x: int, y: Optional[Union[str, int]]) -> List[Dict[str, Any]]:
     """
     This is the summary line.
@@ -6,11 +9,11 @@ def f(x: int, y: Optional[Union[str, int]]) -> List[Dict[str, Any]]:
     And this is the second line.
 
     Args:
-        y (Optional[Union[str,int]]): This is the description of the second argument.
+        y (Optional[Union[str, int]]): This is the description of the second argument.
             This is the second line of the second argument's description.
     
     Returns:
-        List[Dict[str,Any]]: This is the description of the return type.
+        List[Dict[str, Any]]: This is the description of the return type.
     """
     pass
 

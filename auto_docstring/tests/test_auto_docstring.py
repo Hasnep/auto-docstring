@@ -68,18 +68,26 @@ def test_find_functions_in_ast(python_code: str, expected_n_functions: int):
     assert len(output) == expected_n_functions
 
 
-stringify_type_expression_input = [
-    f.returns for f in find_functions_in_ast(parse_python_code(test_code))
-]
-stringify_type_expression_expected_output = [
+def _get_expr_of_type_code(test_code: str) -> ast.expr:
+    tree = ast.parse("from typing import Dict, List, Union, Optional;" + test_code)
+    x = tree.body
+    y = x[1]
+    z: ast.expr = y.value  # type: ignore
+    return z
+
+
+stringify_type_expression_codes = [
     "List[Dict[str, Any]]",
     "Optional[Union[int, MyOtherType]]",
+]
+stringify_type_expression_input = [
+    _get_expr_of_type_code(test_code) for test_code in stringify_type_expression_codes
 ]
 
 
 @pytest.mark.parametrize(
     ",".join(["type_expression", "expected_output"]),
-    zip(stringify_type_expression_input, stringify_type_expression_expected_output),
+    zip(stringify_type_expression_input, stringify_type_expression_codes),
 )
 def test_stringify_type_expression(type_expression: ast.expr, expected_output: str):
     assert stringify_type_expression(type_expression) == expected_output
