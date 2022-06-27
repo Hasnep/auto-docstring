@@ -14,4 +14,6 @@ for file_path in file_paths:
     functions = find_functions_in_ast(the_ast)
     functions = [extract_parts_of_function_def(f) for f in functions]
     for function in functions:
-        check_docstring(function)
+        passd_check = check_docstring(function)
+        if passd_check:
+            print(f"Function `{function.name}` is good!")

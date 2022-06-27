@@ -10,7 +10,7 @@ test:
 	poetry run python -m pytest --cov=auto_docstring -vv auto_docstring
 
 run:
-	poetry run python -m auto_docstring test.py
+	poetry run python -m auto_docstring test-good.py test-bad.py
 
 ssort:
 	poetry run python -m ssort auto_docstring

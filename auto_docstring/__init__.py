@@ -94,12 +94,12 @@ def split_first(x: str, until_this: str) -> Tuple[str, str, str]:
 
 @dataclass
 class DocstringParts:
-    summary: str
-    description: str
-    args: str
-    raises: str
-    returns: str
-    yields: str
+    summary: Optional[str]
+    description: Optional[str]
+    args: Optional[str]
+    raises: Optional[str]
+    returns: Optional[str]
+    yields: Optional[str]
 
 
 def extract_docstring_parts(docstring: str) -> DocstringParts:
@@ -109,7 +109,7 @@ def extract_docstring_parts(docstring: str) -> DocstringParts:
                 r"^",  # Start of string
                 r"(?: {0,4})?",  # Optional indentation
                 r"(?P<summary>.+)",  # One line summary
-                r"(?:\n\n(?P<description>(.|\n)+?))?",  # Optional multi-line description
+                r"(?:\n\n(?P<description>(?!Args:)(.|\n)+?))?",  # Optional multi-line description
                 r"(?:\n\nArgs:\n(?P<args>(.|\n)+?))?",  # Optional list of arguments
                 r"(?:\n\nRaises:\n(?P<raises>(.|\n)+))?",  # Optional list of errors raised
                 r"(?:\n\nReturns:\n(?P<returns>(.|\n)+?))?",  # Optional list of return values
@@ -144,7 +144,7 @@ def parse_args_from_docstring(docstring_args: str) -> List[DocstringFunctionArgu
     docstring_args = docstring_args.strip()
     args: List[DocstringFunctionArgument] = []
     argument_pattern = re.compile(
-        r"^(?P<name>\w+) \((?P<type_hint>.+)\): (?P<description>.+)$"
+        r"^(?P<name>\w+?) \((?P<type_hint>.+?)\): (?P<description>.+)$"
     )
     found_an_arg = False
     name: str = ""
@@ -161,6 +161,7 @@ def parse_args_from_docstring(docstring_args: str) -> List[DocstringFunctionArgu
                     name=name, type_hint=type_hint, description=description
                 )
                 args.append(argument)
+                found_an_arg = False
 
             name = matches.group("name")
             type_hint = matches.group("type_hint")
@@ -173,6 +174,12 @@ def parse_args_from_docstring(docstring_args: str) -> List[DocstringFunctionArgu
                 raise ValueError(
                     "Found an argument description without defining an argument."
                 )
+    # Append the last argument
+    if found_an_arg:
+        argument = DocstringFunctionArgument(
+            name=name, type_hint=type_hint, description=description
+        )
+        args.append(argument)
     return args
 
 
@@ -229,7 +236,14 @@ def check_docstring(function: FunctionParts) -> bool:
     docstring_parts = extract_docstring_parts(docstring)
 
     # Compare the docstring to the function definition
-    docstring_args = parse_args_from_docstring(docstring_parts.args)
+
+    if docstring_parts.args is None:
+        docstring_args = []
+    else:
+        docstring_args = parse_args_from_docstring(docstring_parts.args)
+
+    print(f"Docstring args is `{docstring_args}`.")
+
     for function_arg, docstring_arg in zip(function.arguments, docstring_args):
         if function_arg.name != docstring_arg.name:
             print(

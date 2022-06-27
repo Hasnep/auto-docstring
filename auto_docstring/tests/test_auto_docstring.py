@@ -131,6 +131,7 @@ def test_parse_args_from_docstring(
     docstring_args: str, expected_args: List[DocstringFunctionArgument]
 ):
     output = parse_args_from_docstring(docstring_args)
+    assert len(output) == len(expected_args)
     for output_arg, expected_arg in zip(output, expected_args):
         assert output_arg.name == expected_arg.name
         assert output_arg.type_hint == expected_arg.type_hint
