@@ -3,21 +3,21 @@ from typing import List
 
 import pytest
 
-
-from auto_docstring.tests.utils import get_first_statement_as_expr, get_nth_letter
-
 from auto_docstring import (
     DocstringFunctionArgument,
     FunctionArgument,
+    FunctionDef,
     FunctionParts,
     find_functions_in_ast,
     generate_docstring,
     generate_docstring_argument,
+    get_return_type_hint,
     indent,
     parse_args_from_docstring,
     parse_python_code,
     stringify_type_expression,
 )
+from auto_docstring.tests.utils import get_first_statement_as_expr, get_nth_letter
 
 test_code = '''
 def f(x: int, y: Optional[Union[str, int]]) -> List[Dict[str, Any]]:
@@ -83,6 +83,15 @@ stringify_type_expression_input = [
 )
 def test_stringify_type_expression(type_expression: ast.expr, expected_output: str):
     assert stringify_type_expression(type_expression) == expected_output
+
+
+stringify_type_expression_errors_input = ["alskdj"]
+
+
+@pytest.mark.parametrize("type_expression", stringify_type_expression_errors_input)
+def test_stringify_type_expression_errors(type_expression: ast.expr):
+    with pytest.raises(ValueError):
+        stringify_type_expression(type_expression)
 
 
 parse_args_from_docstring_input = [
@@ -189,3 +198,27 @@ Return:
 )
 def test_generate_docstring(function_parts: FunctionParts, expected_docstring: str):
     assert generate_docstring(function_parts) == expected_docstring
+
+
+get_return_type_hint_input = [
+    "def f() -> int: pass",
+    "def g() -> Optional[Union[str, int]]: pass",
+    "def g(): pass",
+]
+get_return_type_hint_output = ["int", "Optional[Union[str, int]]", None]
+
+
+@pytest.mark.parametrize(
+    ",".join(["function_def", "expected_return_type_hint"]),
+    zip(
+        [
+            find_functions_in_ast(parse_python_code(x))[0]
+            for x in get_return_type_hint_input
+        ],
+        get_return_type_hint_output,
+    ),
+)
+def test_get_return_type_hint(
+    function_def: FunctionDef, expected_return_type_hint: str
+):
+    assert get_return_type_hint(function_def) == expected_return_type_hint

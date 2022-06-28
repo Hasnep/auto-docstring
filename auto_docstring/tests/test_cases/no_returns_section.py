@@ -1,4 +1,4 @@
-def no_returns_section(_x:str) -> int:
+def no_returns_section(_x: str) -> int:
     """
     _function_summary_
 

@@ -1,24 +1,25 @@
 [flake8]
 
 ignore=E101, ; indentation contains mixed spaces and tabs
-E111, ;  indentation is not a multiple of four
-E122, ; continuation line missing indentation or outdented
-E124, ; closing bracket does not match visual indentation
-E128,
-E201,
-E202,
-E203,
-E221,
-E222,
-E225,
-E226,
-E231,
-E241,
-E271,
-E302,
-E303,
-E5,     ; Line length
-W291,
-W292,
-W293,
-W5,
+    E111, ;  indentation is not a multiple of four
+    E122, ; continuation line missing indentation or outdented
+    E124, ; closing bracket does not match visual indentation
+    E128,
+    E201,
+    E202,
+    E203,
+    E221,
+    E222,
+    E225,
+    E226,
+    E231,
+    E241,
+    E271,
+    E302,
+    E303,
+    E5,     ; Line length
+    W291,
+    W292,
+    W293,
+    W5,
+    E131

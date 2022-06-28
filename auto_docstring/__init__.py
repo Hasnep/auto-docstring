@@ -1,17 +1,8 @@
-import argparse
 import ast
 import re
 from ast import AST, FunctionDef
 from dataclasses import dataclass
-from pathlib import Path
-from typing import List, Optional, Tuple
-
-
-def get_cli_arguments() -> List[Path]:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("file_paths", nargs="*")
-    arguments = parser.parse_args()
-    return arguments.file_paths
+from typing import List, Optional
 
 
 @dataclass
@@ -85,11 +76,6 @@ def extract_parts_of_function_def(function_def: FunctionDef) -> FunctionParts:
     arguments = get_function_arguments(function_def)
     return_type = get_return_type_hint(function_def)
     return FunctionParts(function_name, docstring, arguments, return_type)
-
-
-def split_first(x: str, until_this: str) -> Tuple[str, str, str]:
-    index_of_split = x.index(until_this)
-    return x[index_of_split:], until_this, x[:index_of_split]
 
 
 @dataclass
