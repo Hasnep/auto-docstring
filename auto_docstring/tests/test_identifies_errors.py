@@ -26,4 +26,4 @@ def test_bad_code_fails_check(test_case_name: str, test_case_code: str):
     first_function_definition_parts = extract_parts_of_function_def(
         first_function_definition
     )
-    assert check_docstring(first_function_definition_parts) is False
+    assert check_docstring(first_function_definition_parts) 

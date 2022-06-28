@@ -12,6 +12,7 @@ from auto_docstring import (
     generate_docstring,
     generate_docstring_argument,
     get_function_arguments,
+    get_function_name,
     get_return_type_hint,
     indent,
     parse_args_from_docstring,
@@ -253,3 +254,24 @@ def test_get_function_arguments(
     function_def: FunctionDef, expected_function_arguments: List[FunctionArgument]
 ):
     assert get_function_arguments(function_def) == expected_function_arguments
+
+
+get_function_name_input = [
+    "def f(): pass",
+    "def my_function(): pass",
+]
+get_function_name_output = ["f", "my_function"]
+
+
+@pytest.mark.parametrize(
+    ",".join(["function_def", "expected_function_name"]),
+    zip(
+        [
+            find_functions_in_ast(parse_python_code(x))[0]
+            for x in get_function_name_input
+        ],
+        get_function_name_output,
+    ),
+)
+def test_get_function_name(function_def: FunctionDef, expected_function_name: str):
+    assert get_function_name(function_def) == expected_function_name

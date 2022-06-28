@@ -2,7 +2,15 @@ import ast
 import re
 from ast import AST, FunctionDef
 from dataclasses import dataclass
+from pathlib import Path
 from typing import List, Optional
+
+from auto_docstring.docstring_errors import (
+    DocstringError,
+    IncorrectArgumentTypehintError,
+    MissingArgumentError,
+    MissingDocstringError,
+)
 
 
 @dataclass
@@ -208,38 +216,39 @@ def generate_docstring(function: FunctionParts) -> str:
     return "\n".join(docstring_parts)
 
 
-def check_docstring(function: FunctionParts) -> bool:
+def check_docstring(file_path: Path, function: FunctionParts) -> List[DocstringError]:
     function_name = function.name
     docstring = function.docstring
+    docstring_errors: List[DocstringError] = []
 
     # No docstring obviously fails
     if docstring is None:
-        print(f"Function `{function_name}` has no docstring.")
-        return False
+        docstring_errors.append(MissingDocstringError(file_path, function_name))
 
-    is_correct = True
-
-    docstring_parts = extract_docstring_parts(docstring)
-
-    # Compare the docstring to the function definition
-
-    if docstring_parts.args is None:
-        docstring_args = []
     else:
-        docstring_args = parse_args_from_docstring(docstring_parts.args)
+        docstring_parts = extract_docstring_parts(docstring)
 
-    print(f"Docstring args is `{docstring_args}`.")
+        # Compare the docstring to the function definition
 
-    for function_arg, docstring_arg in zip(function.arguments, docstring_args):
-        if function_arg.name != docstring_arg.name:
-            print(
-                f"Function `{function_name}` argument `{function_arg.name}` is not documented."
-            )
-            is_correct = False
-        if function_arg.type_hint != docstring_arg.type_hint:
-            print(
-                f"Function `{function_name}` argument `{function_arg.name}` has the wrong type hint."
-            )
-            is_correct = False
+        if docstring_parts.args is None:
+            docstring_args = []
+        else:
+            docstring_args = parse_args_from_docstring(docstring_parts.args)
 
-    return is_correct
+        for function_arg, docstring_arg in zip(function.arguments, docstring_args):
+            if function_arg.name != docstring_arg.name:
+                docstring_errors.append(
+                    MissingArgumentError(file_path, function_name, function_arg.name)
+                )
+
+            if (
+                function_arg.name == docstring_arg.name
+                and function_arg.type_hint != docstring_arg.type_hint
+            ):
+                docstring_errors.append(
+                    IncorrectArgumentTypehintError(
+                        file_path, function_name, function_arg.name
+                    )
+                )
+
+    return docstring_errors

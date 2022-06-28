@@ -8,7 +8,7 @@ def f(x: int, y: Optional[Union[str, int]]) -> List[Dict[str, Any]]:
     Args:
         x (int): This is the description of the first argument.
             It extends to another line.
-        y (Optional[Union[str,int]]): This is the description of the second argument.
+        y (Optional[Union[str, int]]): This is the description of the second argument.
             This is the second line of the second argument's description.
     
     Returns:

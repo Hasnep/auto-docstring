@@ -11,7 +11,7 @@ python = "^3.10"
 # Formatting
 ssort = "^0.11"
 isort = "^5.10"
-black = "^22.3"
+black = "^22.6"
 # Linting
 flake8 = "^4.0"
 # Type checking
