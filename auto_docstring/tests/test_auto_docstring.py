@@ -11,6 +11,7 @@ from auto_docstring import (
     find_functions_in_ast,
     generate_docstring,
     generate_docstring_argument,
+    get_function_arguments,
     get_return_type_hint,
     indent,
     parse_args_from_docstring,
@@ -202,8 +203,8 @@ def test_generate_docstring(function_parts: FunctionParts, expected_docstring: s
 
 get_return_type_hint_input = [
     "def f() -> int: pass",
-    "def g() -> Optional[Union[str, int]]: pass",
-    "def g(): pass",
+    "def f() -> Optional[Union[str, int]]: pass",
+    "def f(): pass",
 ]
 get_return_type_hint_output = ["int", "Optional[Union[str, int]]", None]
 
@@ -222,3 +223,33 @@ def test_get_return_type_hint(
     function_def: FunctionDef, expected_return_type_hint: str
 ):
     assert get_return_type_hint(function_def) == expected_return_type_hint
+
+
+get_function_arguments_input = [
+    "def f(): pass",
+    "def f(x): pass",
+    "def f(x: int): pass",
+    "def f(x: str, y: Optional[int]): pass",
+]
+get_function_arguments_output = [
+    [],
+    [FunctionArgument("x", None)],
+    [FunctionArgument("x", "int")],
+    [FunctionArgument("x", "str"), FunctionArgument("y", "Optional[int]")],
+]
+
+
+@pytest.mark.parametrize(
+    ",".join(["function_def", "expected_function_arguments"]),
+    zip(
+        [
+            find_functions_in_ast(parse_python_code(x))[0]
+            for x in get_function_arguments_input
+        ],
+        get_function_arguments_output,
+    ),
+)
+def test_get_function_arguments(
+    function_def: FunctionDef, expected_function_arguments: List[FunctionArgument]
+):
+    assert get_function_arguments(function_def) == expected_function_arguments
